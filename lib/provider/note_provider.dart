@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart';
-import 'note_model.dart';
+import '../db/database_helper.dart';
+import '../model/note_model.dart';
 
 class NoteProvider with ChangeNotifier {
   List<Note> _notes = [];

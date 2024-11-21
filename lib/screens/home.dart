@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'note_provider.dart';
+import '../provider/note_provider.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
