@@ -1,54 +1,11 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart';
-import 'note_model.dart';
+import 'package:provider/provider.dart';
+import 'note_provider.dart';
 import 'package:intl/intl.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final _noteController = TextEditingController();
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Note> _notes = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotes();
-  }
-
-  Future<void> _loadNotes() async {
-    final notes = await _dbHelper.getNotes();
-    setState(() {
-      _notes = notes;
-    });
-  }
-
-  Future<void> _addNote() async {
-    if (_formKey.currentState!.validate()) {
-      final newNote = Note(
-        content: _noteController.text.trim(),
-        date: DateTime.now().toIso8601String(),
-      );
-      await _dbHelper.addNote(newNote);
-      _noteController.clear();
-      _loadNotes();
-    }
-  }
-
-  String formatDateTime(String dateTimeString) {
-    final dateTime = DateTime.parse(dateTimeString).toLocal();
-    return DateFormat('dd.MM.yyyy, HH:mm:ss').format(dateTime);
-  }
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.green[800],
         title: Text(
           'Notes App',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
         ),
         centerTitle: true,
       ),
@@ -103,7 +57,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(width: 16),
                   ElevatedButton(
-                    onPressed: _addNote,
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        Provider.of<NoteProvider>(context, listen: false)
+                            .addNote(_noteController.text.trim());
+                        _noteController.clear();
+                      }
+                    },
                     child: Text('Add'),
                   ),
                 ],
@@ -111,37 +71,39 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Expanded(
-            child: _notes.isEmpty
-                ? Center(child: Text('No notes yet'))
-                : ListView.builder(
-              itemCount: _notes.length,
-              itemBuilder: (context, index) {
-                final note = _notes[index];
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 1.0,
-                    horizontal: 20.0,
-                  ),
-                  child: Card(
-                    color: Colors.white,
-                    child: ListTile(
-                      title: Text(
-                        note.content,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+            child: Consumer<NoteProvider>(
+              builder: (context, noteProvider, child) {
+                final notes = noteProvider.notes;
+                if (notes.isEmpty) {
+                  return Center(child: Text('No notes yet'));
+                }
+                return ListView.builder(
+                  itemCount: notes.length,
+                  itemBuilder: (context, index) {
+                    final note = notes[index];
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 1.0, horizontal: 20.0),
+                      child: Card(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text(
+                            note.content,
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            DateFormat('dd.MM.yyyy, HH:mm:ss').format(
+                                DateTime.parse(note.date).toLocal()),
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.lightGreen[800]),
+                          ),
                         ),
                       ),
-                      subtitle: Text(
-                        formatDateTime(note.date),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.lightGreen[800],
-                        ),
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),
