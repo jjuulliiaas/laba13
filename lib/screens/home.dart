@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                             DateFormat('dd.MM.yyyy, HH:mm:ss').format(
                                 DateTime.parse(note.date).toLocal()),
                             style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w300,
                                 color: Colors.lightGreen[800]),
                           ),
